@@ -24,13 +24,16 @@ jobs:
       - name: Prepare matrix
         id: prepare
         run: |
-          echo 1
-          echo 2
           CHANGED=()
           for v in 14 17; do
             VAR="odoo${v}"
             echo "Checking $VAR =>"
+            if [[ "${{ steps.filter.outputs[$VAR] }}" == "true" ]]; then
+              CHANGED+=("{\"version\":\"${v}.0\"}")
+            fi
           done
+          JSON="{\"include\":[$(IFS=,; echo "${CHANGED[*]}")]}"
+          echo "matrix=$JSON" >> $GITHUB_OUTPUT
 
   # build:
   #   needs: detect

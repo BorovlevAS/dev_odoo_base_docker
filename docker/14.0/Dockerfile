@@ -51,7 +51,8 @@ RUN groupadd --gid ${DOCKER_ODOO_GID} odoo \
 RUN mkdir -p /workspace/extra_addons \
     /workspace/conf \
     /workspace/odoo \
-    && chown -R odoo:odoo /workspace
+    /opt/odoo \
+    && chown -R odoo:odoo /workspace /opt/odoo
 
 WORKDIR /usr/local/lib
 

@@ -27,6 +27,7 @@ jobs:
           CHANGED=()
           for v in 14 17; do
             VAR="odoo${v}"
+            echo "Checking $VAR => ${{ steps.filter.outputs[$VAR] }}"
             if [[ "${{ steps.filter.outputs[$VAR] }}" == "true" ]]; then
               CHANGED+=("{\"version\":\"${v}.0\"}")
             fi

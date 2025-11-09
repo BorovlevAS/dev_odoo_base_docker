@@ -24,6 +24,8 @@ jobs:
       - name: Prepare matrix
         id: prepare
         run: |
+          echo 1
+          echo 2
           CHANGED=()
           for v in 14 17; do
             VAR="odoo${v}"

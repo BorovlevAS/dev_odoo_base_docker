@@ -1,36 +1,64 @@
 # Dev Odoo Base Docker
 
-[![Build and push Docker images](https://github.com/BorovlevAS/dev_odoo_base_docker/actions/workflows/docker_build.yml/badge.svg)](https://github.com/BorovlevAS/dev_odoo_base_docker/actions/workflows/docker_build.yml)
-[![Docker Hub](https://img.shields.io/badge/Docker%20Hub-borovlevas%2Fdev__odoo17__base__docker-blue)](https://hub.docker.com/r/borovlevas/dev_odoo17_base_docker)
+[![Build & Push per Odoo version](https://github.com/BorovlevAS/dev_odoo_base_docker/actions/workflows/docker_build.yml/badge.svg)](https://github.com/BorovlevAS/dev_odoo_base_docker/actions/workflows/docker_build.yml)
+[![Docker Hub](https://img.shields.io/badge/Docker%20Hub-borovlevas%2Fodoo--base-blue)](https://hub.docker.com/r/borovlevas/odoo-base)
 
-Base Docker image for Odoo 17 development with VS Code Dev Containers.
+Base Docker images for Odoo development with VS Code Dev Containers.
 
 ## 📋 Overview
 
-This repository contains a **base Docker image** for Odoo 17 development environments. Built on Ubuntu Jammy (22.04 LTS), it provides a foundation with all necessary system dependencies, Python packages, and development tools pre-installed.
+This repository contains **base Docker images** for Odoo development environments across multiple versions. Each version is built on Ubuntu (LTS releases) and provides a foundation with all necessary system dependencies, Python packages, and development tools pre-installed.
 
-This image is designed to be **extended** in downstream projects where you add your specific Odoo source code, custom addons, and project-specific requirements. It is automatically built and published to Docker Hub via GitHub Actions.
+These images are designed to be **extended** in downstream projects where you add your specific Odoo source code, custom addons, and project-specific requirements. Images are automatically built and published to Docker Hub via GitHub Actions when changes are detected.
 
-> **Note**: This repository contains only the base image. For a complete DevContainer setup example, see separate project repositories that extend this base image.
+> **Note**: This repository contains only base images. For complete DevContainer setup examples, see separate project repositories that extend these base images.
 
 ## 🎯 Purpose
 
-- **Base Image Only**: Provides a foundation layer with all system dependencies and tools
+- **Multi-Version Support**: Separate base images for different Odoo versions (currently 14.0 and 17.0)
+- **Base Images Only**: Provides foundation layers with all system dependencies and tools
 - **Designed for Extension**: Meant to be extended with `FROM` directive in downstream Dockerfiles
 - **DevContainer Ready**: Optimized for use as a base in VS Code DevContainer projects
-- **Multi-Architecture**: Supports AMD64, ARM64, and PPC64EL architectures
+- **Automated Builds**: CI/CD with GitHub Actions automatically rebuilds images when changes are detected
+- **Version Isolation**: Each Odoo version maintains its own Dockerfile and configuration
 - **Zero Odoo Source**: Contains no Odoo source code - add it in your project
-- **Automated Builds**: CI/CD with GitHub Actions ensures fresh images
+
+## 🗂️ Repository Structure
+
+```
+docker/
+├── 14.0/
+│   ├── Dockerfile         # Odoo 14 base image
+│   └── conf/
+│       └── odoo-server.conf
+└── 17.0/
+    ├── Dockerfile         # Odoo 17 base image
+    └── conf/
+        └── odoo-server.conf
+```
+
+Each version directory contains:
+- **Dockerfile**: Complete image definition for that Odoo version
+- **conf/**: Configuration templates specific to that version
+
+New Odoo versions can be added by creating a new directory following the same structure.
 
 ## 🚀 Features
 
+### Odoo Version Support
+
+- **Odoo 14.0**: Python 3.8+, PostgreSQL 12+
+- **Odoo 17.0**: Python 3.10+, PostgreSQL 14+
+- **Expandable**: Easy to add new versions following the existing structure
+
 ### System Components
 
-- **Base OS**: Ubuntu Jammy (22.04 LTS)
-- **Python**: Python 3 with virtual environment support
-- **Node.js**: Version 18.x with npm 10
-- **PostgreSQL Client**: Latest version from official PostgreSQL repository
-- **wkhtmltopdf**: Version 0.12.6.1-3 for PDF generation
+Each image includes:
+- **Base OS**: Ubuntu LTS (version specific to Odoo requirements)
+- **Python**: Version appropriate for the Odoo release
+- **Node.js**: Latest LTS version with npm
+- **PostgreSQL Client**: Version matching Odoo requirements
+- **wkhtmltopdf**: For PDF generation
 
 ### Development Tools
 
@@ -42,12 +70,12 @@ This image is designed to be **extended** in downstream projects where you add y
 
 ### Odoo Dependencies
 
-All required Python packages from Odoo 17 requirements:
+All required Python packages from respective Odoo version requirements:
 - Web framework dependencies (Werkzeug, Jinja2, etc.)
 - Database drivers (psycopg2)
 - Image processing (Pillow, reportlab)
 - Document handling (lxml, xlrd, xlwt, odfpy)
-- And many more...
+- Version-specific dependencies
 
 ### Additional Libraries
 
@@ -84,28 +112,49 @@ All required Python packages from Odoo 17 requirements:
 
 ## 🐳 Docker Hub
 
-The image is available on Docker Hub:
+Images are available on Docker Hub under the `borovlevas/odoo-base` repository:
 
 ```bash
-docker pull borovlevas/dev_odoo17_base_docker:latest
+# Pull Odoo 14 base image
+docker pull borovlevas/odoo-base:14.0
+
+# Pull Odoo 17 base image
+docker pull borovlevas/odoo-base:17.0
 ```
 
 ### Available Tags
 
-- `latest` - Latest stable build
-- `1.0.0` - Specific version tag
+Each version has multiple tags:
+- `14.0` - Latest Odoo 14 build
+- `14.0-YYYYMMDD` - Date-tagged builds
+- `14.0-{SHA}` - Git commit-tagged builds
+- `17.0` - Latest Odoo 17 build
+- `17.0-YYYYMMDD` - Date-tagged builds
+- `17.0-{SHA}` - Git commit-tagged builds
 
 ## 🔧 Usage
 
+### Selecting the Right Version
+
+Choose the base image that matches your Odoo version:
+
+```dockerfile
+# For Odoo 14 projects
+FROM borovlevas/odoo-base:14.0
+
+# For Odoo 17 projects
+FROM borovlevas/odoo-base:17.0
+```
+
 ### Extending the Base Image
 
-This image is designed to be extended in your project's Dockerfile. Here's the typical pattern:
+These images are designed to be extended in your project's Dockerfile. Here's the typical pattern:
 
 **1. Create your project Dockerfile:**
 
 ```dockerfile
-# Extend the base image
-FROM borovlevas/dev_odoo17_base_docker:latest
+# Extend the base image for your Odoo version
+FROM borovlevas/odoo-base:17.0
 
 USER odoo
 
@@ -180,20 +229,20 @@ Your `.devcontainer/devcontainer.json` references the extended image:
 
 ### Why Not Use Directly?
 
-This base image does **not** include:
+These base images do **not** include:
 - Odoo source code (mount or clone in your project)
 - Your custom addons
 - Project-specific Python packages
 - Project-specific configuration
 
-These are intentionally left to your downstream project for flexibility.
+These are intentionally left to your downstream project for flexibility and version control.
 
 ## 🔨 Building Locally
 
 ### Prerequisites
 
 - Docker Desktop or Docker Engine
-- Docker Buildx (for multi-architecture builds)
+- Git
 
 ### Build Command
 
@@ -202,35 +251,23 @@ These are intentionally left to your downstream project for flexibility.
 git clone https://github.com/BorovlevAS/dev_odoo_base_docker.git
 cd dev_odoo_base_docker
 
-# Build for your architecture
-docker build -t dev_odoo17_base_docker -f ./docker/Dockerfile .
+# Build specific version
+docker build -t odoo-base:14.0 -f ./docker/14.0/Dockerfile ./docker/14.0
+docker build -t odoo-base:17.0 -f ./docker/17.0/Dockerfile ./docker/17.0
 
-# Build for multiple architectures
-docker buildx build \
-  --platform linux/amd64,linux/arm64 \
-  -t dev_odoo17_base_docker \
-  -f ./docker/Dockerfile .
+# Or build all versions
+for version in 14.0 17.0; do
+  docker build -t odoo-base:${version} -f ./docker/${version}/Dockerfile ./docker/${version}
+done
 ```
 
 ## ⚙️ Configuration
 
 ### Included Configuration
 
-The image includes a minimal Odoo configuration template at `/workspace/conf/odoo-server.conf` with basic settings:
+Each version includes a minimal Odoo configuration template in its `conf/` directory with basic settings appropriate for that version.
 
-```ini
-[options]
-addons_path = /workspace/odoo, /workspace/odoo/addons, /workspace/simbioz_repo/extra_addons
-admin_passwd = admin
-db_host = db
-db_port = 5432
-db_user = odoo
-db_password = odoo
-http_port = 8069
-longpolling_port = 8072
-```
-
-> **Note**: This configuration is a starting point. In your project, you should mount your own configuration file with project-specific paths and settings.
+> **Note**: These configurations are starting points. In your project, you should mount your own configuration file with project-specific paths and settings.
 
 ### Using Your Own Configuration
 
@@ -252,16 +289,46 @@ environment:
 
 ### GitHub Actions Workflow
 
-The repository includes a GitHub Actions workflow that automatically builds and publishes the image to Docker Hub.
+The repository uses a universal GitHub Actions workflow that automatically builds and publishes images to Docker Hub when changes are detected.
 
-**Trigger**: Manual workflow dispatch
+**Features**:
+- **Smart Detection**: Automatically detects which Odoo versions have changes using path filters
+- **Selective Builds**: Only rebuilds versions that have been modified
+- **Multi-Version Support**: Handles multiple versions in parallel
+- **Automated Tagging**: Creates version, date, and commit-based tags
+- **Cache Optimization**: Uses Docker layer caching for faster builds
 
-**Process**:
-1. Checkout repository
-2. Set up QEMU for multi-architecture builds
-3. Set up Docker Buildx
-4. Login to Docker Hub
-5. Build and push image with tags: `latest` and `1.0.0`
+**Triggers**:
+- Push to `main` branch with changes in `docker/**`
+- Manual workflow dispatch
+
+**Process for each changed version**:
+1. Detects changes in version-specific directories (`docker/14.0/**`, `docker/17.0/**`)
+2. Prepares build matrix with affected versions
+3. Checks out repository
+4. Sets up Docker Buildx
+5. Logs in to Docker Hub
+6. Builds and pushes images with multiple tags:
+   - `{version}` - Latest for that version (e.g., `14.0`, `17.0`)
+   - `{version}-YYYYMMDD` - Date-tagged build
+   - `{version}-{SHA}` - Git commit-tagged build
+
+### Adding New Versions
+
+To add support for a new Odoo version:
+
+1. Create a new directory: `docker/{VERSION}/`
+2. Add `Dockerfile` and `conf/odoo-server.conf`
+3. Update the workflow file to include the new version in path filters:
+   ```yaml
+   filters: |
+     odoo14: 'docker/14.0/**'
+     odoo17: 'docker/17.0/**'
+     odoo18: 'docker/18.0/**'  # Add new version
+   ```
+4. Update the version detection loop in the workflow
+
+The workflow will automatically start building the new version on the next push.
 
 ### Required Secrets
 
@@ -274,6 +341,7 @@ Configure these secrets in your GitHub repository:
 
 ### System Packages
 
+Each image includes version-appropriate packages:
 - **Build tools**: gcc, g++, make, python3-dev
 - **Image libraries**: libjpeg, libpng, libwebp, libtiff
 - **Database**: libpq-dev, postgresql-client
@@ -284,15 +352,14 @@ Configure these secrets in your GitHub repository:
 
 ### Python Packages
 
-All packages from [Odoo 17 requirements.txt](https://github.com/odoo/odoo/blob/17.0/requirements.txt) plus:
-
-- debugpy
-- pre-commit
-- gevent==21.8.0 (specific version to avoid build issues)
+All packages from the respective Odoo version's requirements.txt plus common development tools:
+- debugpy (Python debugging)
+- pre-commit (Git hooks framework)
+- Version-specific packages as needed
 
 ### Node.js Packages (Global)
 
-- npm@10
+- npm (latest LTS)
 - less
 - prettier
 - @prettier/plugin-xml
@@ -300,13 +367,22 @@ All packages from [Odoo 17 requirements.txt](https://github.com/odoo/odoo/blob/1
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! This includes:
+- Adding support for new Odoo versions
+- Improving existing Dockerfiles
+- Updating dependencies
+- Documentation improvements
+
+Please feel free to submit a Pull Request:
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+3. For new Odoo versions, create a new directory under `docker/` following the existing structure
+4. Update the GitHub Actions workflow to include the new version
+5. Test your changes locally
+6. Commit your changes (`git commit -m 'Add support for Odoo X.Y'`)
+7. Push to the branch (`git push origin feature/AmazingFeature`)
+8. Open a Pull Request
 
 ## 📝 License
 
@@ -364,7 +440,9 @@ The image includes `debugpy` for Python debugging. When working in a DevContaine
 
 - Allocate at least 4GB RAM to Docker
 - Use volume mounts with `consistency=cached` (macOS/Windows)
-- Consider PostgreSQL 14+ for better performance
+- Consider PostgreSQL version matching your Odoo version for better performance
+  - PostgreSQL 12+ for Odoo 14
+  - PostgreSQL 14+ for Odoo 17
 
 ## 🐛 Troubleshooting
 

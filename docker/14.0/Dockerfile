@@ -6,8 +6,6 @@ SHELL ["/bin/bash", "-euxo", "pipefail", "-c"]
 
 ENV LANG=C.UTF-8
 
-ARG TARGETARCH
-
 RUN set -eux; \
     apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates curl gnupg dirmngr \

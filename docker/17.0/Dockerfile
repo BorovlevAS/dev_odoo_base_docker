@@ -27,6 +27,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     curl \
     fonts-noto-cjk \
     git \
+    openssh-client \
     build-essential python3-dev \
     libjpeg-dev libjpeg-turbo8-dev liblcms2-dev \
     libldap2-dev libsasl2-dev libssl-dev \

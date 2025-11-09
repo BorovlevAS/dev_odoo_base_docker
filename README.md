@@ -101,7 +101,8 @@ All required Python packages from respective Odoo version requirements:
 ├── conf/               # Configuration files
 │   └── odoo-server.conf
 ├── extra_addons/       # Custom addons directory
-└── venv/              # Python virtual environment
+├── odoo/               # Odoo source code
+└── venv/               # Python virtual environment
 ```
 
 ### Exposed Ports

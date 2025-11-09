@@ -24,51 +24,55 @@ jobs:
       - name: Prepare matrix
         id: prepare
         run: |
+          FILTER_JSON='${{ toJson(steps.filter.outputs) }}'
+          echo "Filter results: $FILTER_JSON"
+
           CHANGED=()
           for v in 14 17; do
-            VAR="odoo${v}"
-            echo "Checking $VAR =>"
-            if [[ "${{ steps.filter.outputs[$VAR] }}" == "true" ]]; then
+            key="odoo${v}"
+            val=$(echo "$FILTER_JSON" | jq -r ".${key}")
+            if [[ "$val" == "true" ]]; then
               CHANGED+=("{\"version\":\"${v}.0\"}")
             fi
           done
           JSON="{\"include\":[$(IFS=,; echo "${CHANGED[*]}")]}"
+          echo "matrix results: $JSON"
           echo "matrix=$JSON" >> $GITHUB_OUTPUT
 
-  # build:
-  #   needs: detect
-  #   if: ${{ fromJson(needs.detect.outputs.matrix).include[0] != null }}
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     matrix: ${{ fromJson(needs.detect.outputs.matrix) }}
+  build:
+    needs: detect
+    if: ${{ fromJson(needs.detect.outputs.matrix).include[0] != null }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJson(needs.detect.outputs.matrix) }}
 
-  #   steps:
-  #     - uses: actions/checkout@v4
+    steps:
+      - uses: actions/checkout@v4
 
-  #     - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v3
 
-  #     - uses: docker/login-action@v3
-  #       with:
-  #         username: ${{ secrets.DOCKERHUB_USER }}
-  #         password: ${{ secrets.DOCKERHUB_PASSW }}
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PASSW }}
 
-  #     - name: Docker meta
-  #       id: meta
-  #       uses: docker/metadata-action@v5
-  #       with:
-  #         images: borovlevas/odoo-base
-  #         tags: |
-  #           type=raw,value=${{ matrix.version }}
-  #           type=raw,value=${{ matrix.version }}-${{ github.sha }}
-  #           type=raw,value=${{ matrix.version }}-{{date 'YYYYMMDD'}}
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: borovlevas/odoo-base
+          tags: |
+            type=raw,value=${{ matrix.version }}
+            type=raw,value=${{ matrix.version }}-${{ github.sha }}
+            type=raw,value=${{ matrix.version }}-{{date 'YYYYMMDD'}}
 
-  #     - name: Build and push
-  #       uses: docker/build-push-action@v6
-  #       with:
-  #         context: ./docker/${{ matrix.version }}
-  #         file: ./docker/${{ matrix.version }}/Dockerfile
-  #         push: true
-  #         tags: ${{ steps.meta.outputs.tags }}
-  #         labels: ${{ steps.meta.outputs.labels }}
-  #         cache-from: type=registry,ref=borovlevas/odoo-base:cache
-  #         cache-to: type=registry,ref=borovlevas/odoo-base:cache,mode=max
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./docker/${{ matrix.version }}
+          file: ./docker/${{ matrix.version }}/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=registry,ref=borovlevas/odoo-base:cache
+          cache-to: type=registry,ref=borovlevas/odoo-base:cache,mode=max

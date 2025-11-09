@@ -78,7 +78,7 @@ RUN npm install -g npm@10 less \
 COPY conf/odoo-server.conf /workspace/conf/odoo-server.conf
 
 USER odoo
-ENV VIRTUAL_ENV=/workspace/venv
+ENV VIRTUAL_ENV=/opt/odoo/venv
 RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 WORKDIR /workspace

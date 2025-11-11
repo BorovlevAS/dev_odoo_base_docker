@@ -92,7 +92,7 @@ All required Python packages from respective Odoo version requirements:
 - **User**: `odoo` (UID: 1000, GID: 1000)
 - **Home**: `/home/odoo`
 - **Workspace**: `/workspace`
-- **Virtual Environment**: `/workspace/venv`
+- **Virtual Environment**: `/opt/odoo/venv`
 
 ### Directory Structure
 
@@ -102,7 +102,7 @@ All required Python packages from respective Odoo version requirements:
 │   └── odoo-server.conf
 ├── extra_addons/       # Custom addons directory
 ├── odoo/               # Odoo source code
-└── venv/               # Python virtual environment
+/opt/odoo/venv          # Python virtual environment
 ```
 
 ### Exposed Ports

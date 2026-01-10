@@ -74,7 +74,7 @@ RUN mkdir -p /workspace/extra_addons \
 WORKDIR /usr/local/lib
 
 RUN npm install -g npm@10 less \
-    && npm install global prettier @prettier/plugin-xml prettier-plugin-sql \
+    && npm install --global prettier @prettier/plugin-xml prettier-plugin-sql \
     && npm cache clean --force
 
 COPY conf/odoo-server.conf /workspace/conf/odoo-server.conf

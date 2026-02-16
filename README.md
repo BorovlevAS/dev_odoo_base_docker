@@ -7,7 +7,7 @@ Base Docker images for Odoo development with VS Code Dev Containers.
 
 ## 📋 Overview
 
-This repository contains **base Docker images** for Odoo development environments across multiple versions. Each version is built on Ubuntu (LTS releases) and provides a foundation with all necessary system dependencies, Python packages, and development tools pre-installed.
+This repository contains **base Docker images** for Odoo development environments across multiple versions. Each version is built on Ubuntu (LTS releases) or Python base images and provides a foundation with all necessary system dependencies, Python packages, and development tools pre-installed.
 
 These images are designed to be **extended** in downstream projects where you add your specific Odoo source code, custom addons, and project-specific requirements. Images are automatically built and published to Docker Hub via GitHub Actions when changes are detected.
 
@@ -15,7 +15,7 @@ These images are designed to be **extended** in downstream projects where you ad
 
 ## 🎯 Purpose
 
-- **Multi-Version Support**: Separate base images for different Odoo versions (currently 14.0 and 17.0)
+- **Multi-Version Support**: Separate base images for different Odoo versions (currently 14.0, 17.0, and 18.0)
 - **Base Images Only**: Provides foundation layers with all system dependencies and tools
 - **Designed for Extension**: Meant to be extended with `FROM` directive in downstream Dockerfiles
 - **DevContainer Ready**: Optimized for use as a base in VS Code DevContainer projects
@@ -31,8 +31,12 @@ docker/
 │   ├── Dockerfile         # Odoo 14 base image
 │   └── conf/
 │       └── odoo-server.conf
-└── 17.0/
-    ├── Dockerfile         # Odoo 17 base image
+├── 17.0/
+│   ├── Dockerfile         # Odoo 17 base image
+│   └── conf/
+│       └── odoo-server.conf
+└── 18.0/
+    ├── Dockerfile         # Odoo 18 base image
     └── conf/
         └── odoo-server.conf
 ```
@@ -47,17 +51,18 @@ New Odoo versions can be added by creating a new directory following the same st
 
 ### Odoo Version Support
 
-- **Odoo 14.0**: Python 3.8+, PostgreSQL 12+
-- **Odoo 17.0**: Python 3.10+, PostgreSQL 14+
+- **Odoo 14.0**: Python 3.8 (bullseye), PostgreSQL client 12
+- **Odoo 17.0**: Python 3.10 (Ubuntu Jammy), PostgreSQL client 14
+- **Odoo 18.0**: Python 3.12 (Ubuntu Noble), PostgreSQL client 14
 - **Expandable**: Easy to add new versions following the existing structure
 
 ### System Components
 
 Each image includes:
-- **Base OS**: Ubuntu LTS (version specific to Odoo requirements)
-- **Python**: Version appropriate for the Odoo release
-- **Node.js**: Latest LTS version with npm
-- **PostgreSQL Client**: Version matching Odoo requirements
+- **Base OS**: Ubuntu LTS or Python base image (version specific to Odoo requirements)
+- **Python**: Version appropriate for the Odoo release (3.8 for v14, 3.10+ for v17, 3.12+ for v18)
+- **Node.js**: LTS version with npm (Node 18 for v18.0)
+- **PostgreSQL Client**: Version parameterized via build args (PG 12 for v14, PG 14 for v17/v18)
 - **wkhtmltopdf**: For PDF generation
 
 ### Development Tools
@@ -121,6 +126,9 @@ docker pull borovlevas/odoo-base:14.0
 
 # Pull Odoo 17 base image
 docker pull borovlevas/odoo-base:17.0
+
+# Pull Odoo 18 base image
+docker pull borovlevas/odoo-base:18.0
 ```
 
 ### Available Tags
@@ -132,6 +140,9 @@ Each version has multiple tags:
 - `17.0` - Latest Odoo 17 build
 - `17.0-YYYYMMDD` - Date-tagged builds
 - `17.0-{SHA}` - Git commit-tagged builds
+- `18.0` - Latest Odoo 18 build
+- `18.0-YYYYMMDD` - Date-tagged builds
+- `18.0-{SHA}` - Git commit-tagged builds
 
 ## 🔧 Usage
 
@@ -145,6 +156,9 @@ FROM borovlevas/odoo-base:14.0
 
 # For Odoo 17 projects
 FROM borovlevas/odoo-base:17.0
+
+# For Odoo 18 projects
+FROM borovlevas/odoo-base:18.0
 ```
 
 ### Extending the Base Image
@@ -255,11 +269,33 @@ cd dev_odoo_base_docker
 # Build specific version
 docker build -t odoo-base:14.0 -f ./docker/14.0/Dockerfile ./docker/14.0
 docker build -t odoo-base:17.0 -f ./docker/17.0/Dockerfile ./docker/17.0
+docker build -t odoo-base:18.0 -f ./docker/18.0/Dockerfile ./docker/18.0
 
 # Or build all versions
-for version in 14.0 17.0; do
+for version in 14.0 17.0 18.0; do
   docker build -t odoo-base:${version} -f ./docker/${version}/Dockerfile ./docker/${version}
 done
+```
+
+### Build Arguments
+
+Each Dockerfile supports build arguments for customization:
+
+- **DOCKER_ODOO_UID**: User ID for odoo user (default: 1000)
+- **DOCKER_ODOO_GID**: Group ID for odoo user (default: 1000)
+- **PG_MAJOR**: PostgreSQL client version to install
+  - Odoo 14: defaults to 12
+  - Odoo 17: defaults to 14
+  - Odoo 18: defaults to 14
+
+Example with custom PostgreSQL version:
+
+```bash
+docker build \
+  --build-arg PG_MAJOR=15 \
+  -t odoo-base:17.0-custom \
+  -f ./docker/17.0/Dockerfile \
+  ./docker/17.0
 ```
 
 ## ⚙️ Configuration
@@ -304,13 +340,13 @@ The repository uses a universal GitHub Actions workflow that automatically build
 - Manual workflow dispatch
 
 **Process for each changed version**:
-1. Detects changes in version-specific directories (`docker/14.0/**`, `docker/17.0/**`)
+1. Detects changes in version-specific directories (`docker/14.0/**`, `docker/17.0/**`, `docker/18.0/**`)
 2. Prepares build matrix with affected versions
 3. Checks out repository
 4. Sets up Docker Buildx
 5. Logs in to Docker Hub
 6. Builds and pushes images with multiple tags:
-   - `{version}` - Latest for that version (e.g., `14.0`, `17.0`)
+   - `{version}` - Latest for that version (e.g., `14.0`, `17.0`, `18.0`)
    - `{version}-YYYYMMDD` - Date-tagged build
    - `{version}-{SHA}` - Git commit-tagged build
 
@@ -325,9 +361,10 @@ To add support for a new Odoo version:
    filters: |
      odoo14: 'docker/14.0/**'
      odoo17: 'docker/17.0/**'
-     odoo18: 'docker/18.0/**'  # Add new version
+     odoo18: 'docker/18.0/**'
+     odoo{XX}: 'docker/{XX}.0/**'  # Add new version
    ```
-4. Update the version detection loop in the workflow
+4. Update the version detection loop in the workflow to include the new version number
 
 The workflow will automatically start building the new version on the next push.
 
@@ -444,6 +481,7 @@ The image includes `debugpy` for Python debugging. When working in a DevContaine
 - Consider PostgreSQL version matching your Odoo version for better performance
   - PostgreSQL 12+ for Odoo 14
   - PostgreSQL 14+ for Odoo 17
+  - PostgreSQL 14+ for Odoo 18
 
 ## 🐛 Troubleshooting
 

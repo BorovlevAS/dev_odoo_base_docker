@@ -1,6 +1,7 @@
 FROM python:3.8-bullseye
 ARG DOCKER_ODOO_UID=1000  
 ARG DOCKER_ODOO_GID=1000
+ARG PG_MAJOR=12
 
 SHELL ["/bin/bash", "-euxo", "pipefail", "-c"]
 
@@ -31,7 +32,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     libopenjp2-7-dev libpq-dev libtiff5-dev libwebp-dev \
     libxml2-dev libxcb1-dev libxslt1-dev \
     nodejs \
-    postgresql-client \
+    postgresql-client-${PG_MAJOR} \
     python3-magic python3-num2words python3-odf python3-pdfminer python3-venv \
     python3-phonenumbers python3-pip python3-qrcode python3-renderpm python3-pyldap \
     python3-slugify python3-vobject python3-watchdog python3-xlrd python3-xlwt \

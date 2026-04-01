@@ -15,7 +15,7 @@ These images are designed to be **extended** in downstream projects where you ad
 
 ## 🎯 Purpose
 
-- **Multi-Version Support**: Separate base images for different Odoo versions (currently 14.0, 17.0, and 18.0)
+- **Multi-Version Support**: Separate base images for different Odoo versions (currently 14.0, 16.0, 17.0, and 18.0)
 - **Base Images Only**: Provides foundation layers with all system dependencies and tools
 - **Designed for Extension**: Meant to be extended with `FROM` directive in downstream Dockerfiles
 - **DevContainer Ready**: Optimized for use as a base in VS Code DevContainer projects
@@ -29,6 +29,10 @@ These images are designed to be **extended** in downstream projects where you ad
 docker/
 ├── 14.0/
 │   ├── Dockerfile         # Odoo 14 base image
+│   └── conf/
+│       └── odoo-server.conf
+├── 16.0/
+│   ├── Dockerfile         # Odoo 16 base image
 │   └── conf/
 │       └── odoo-server.conf
 ├── 17.0/
@@ -52,6 +56,7 @@ New Odoo versions can be added by creating a new directory following the same st
 ### Odoo Version Support
 
 - **Odoo 14.0**: Python 3.8 (bullseye), PostgreSQL client 12
+- **Odoo 16.0**: Debian bookworm, PostgreSQL client 15
 - **Odoo 17.0**: Python 3.10 (Ubuntu Jammy), PostgreSQL client 14
 - **Odoo 18.0**: Python 3.12 (Ubuntu Noble), PostgreSQL client 14
 - **Expandable**: Easy to add new versions following the existing structure
@@ -59,10 +64,10 @@ New Odoo versions can be added by creating a new directory following the same st
 ### System Components
 
 Each image includes:
-- **Base OS**: Ubuntu LTS or Python base image (version specific to Odoo requirements)
-- **Python**: Version appropriate for the Odoo release (3.8 for v14, 3.10+ for v17, 3.12+ for v18)
-- **Node.js**: LTS version with npm (Node 18 for v18.0)
-- **PostgreSQL Client**: Version parameterized via build args (PG 12 for v14, PG 14 for v17/v18)
+- **Base OS**: Ubuntu LTS, Debian bookworm, or Python base image (version specific to Odoo requirements)
+- **Python**: Version appropriate for the Odoo release (3.8 for v14, system for v16, 3.10+ for v17, 3.12+ for v18)
+- **Node.js**: v18.x via nodesource
+- **PostgreSQL Client**: Version parameterized via build args (PG 12 for v14, PG 15 for v16, PG 14 for v17/v18)
 - **wkhtmltopdf**: For PDF generation
 
 ### Development Tools
@@ -124,6 +129,9 @@ Images are available on Docker Hub under the `borovlevas/odoo-base` repository:
 # Pull Odoo 14 base image
 docker pull borovlevas/odoo-base:14.0
 
+# Pull Odoo 16 base image
+docker pull borovlevas/odoo-base:16.0
+
 # Pull Odoo 17 base image
 docker pull borovlevas/odoo-base:17.0
 
@@ -137,6 +145,9 @@ Each version has multiple tags:
 - `14.0` - Latest Odoo 14 build
 - `14.0-YYYYMMDD` - Date-tagged builds
 - `14.0-{SHA}` - Git commit-tagged builds
+- `16.0` - Latest Odoo 16 build
+- `16.0-YYYYMMDD` - Date-tagged builds
+- `16.0-{SHA}` - Git commit-tagged builds
 - `17.0` - Latest Odoo 17 build
 - `17.0-YYYYMMDD` - Date-tagged builds
 - `17.0-{SHA}` - Git commit-tagged builds
@@ -153,6 +164,9 @@ Choose the base image that matches your Odoo version:
 ```dockerfile
 # For Odoo 14 projects
 FROM borovlevas/odoo-base:14.0
+
+# For Odoo 16 projects
+FROM borovlevas/odoo-base:16.0
 
 # For Odoo 17 projects
 FROM borovlevas/odoo-base:17.0
@@ -268,13 +282,9 @@ cd dev_odoo_base_docker
 
 # Build specific version
 docker build -t odoo-base:14.0 -f ./docker/14.0/Dockerfile ./docker/14.0
+docker build -t odoo-base:16.0 -f ./docker/16.0/Dockerfile ./docker/16.0
 docker build -t odoo-base:17.0 -f ./docker/17.0/Dockerfile ./docker/17.0
 docker build -t odoo-base:18.0 -f ./docker/18.0/Dockerfile ./docker/18.0
-
-# Or build all versions
-for version in 14.0 17.0 18.0; do
-  docker build -t odoo-base:${version} -f ./docker/${version}/Dockerfile ./docker/${version}
-done
 ```
 
 ### Build Arguments
@@ -285,6 +295,7 @@ Each Dockerfile supports build arguments for customization:
 - **DOCKER_ODOO_GID**: Group ID for odoo user (default: 1000)
 - **PG_MAJOR**: PostgreSQL client version to install
   - Odoo 14: defaults to 12
+  - Odoo 16: defaults to 15
   - Odoo 17: defaults to 14
   - Odoo 18: defaults to 14
 
@@ -360,6 +371,7 @@ To add support for a new Odoo version:
    ```yaml
    filters: |
      odoo14: 'docker/14.0/**'
+     odoo16: 'docker/16.0/**'
      odoo17: 'docker/17.0/**'
      odoo18: 'docker/18.0/**'
      odoo{XX}: 'docker/{XX}.0/**'  # Add new version
@@ -380,13 +392,17 @@ Configure these secrets in your GitHub repository:
 ### System Packages
 
 Each image includes version-appropriate packages:
-- **Build tools**: gcc, g++, make, python3-dev
-- **Image libraries**: libjpeg, libpng, libwebp, libtiff
-- **Database**: libpq-dev, postgresql-client
-- **XML/HTML**: libxml2, libxslt, libfontconfig
-- **Fonts**: fonts-noto-cjk (CJK language support)
+- **Build tools**: build-essential, python3-dev, cargo
+- **Image libraries**: libjpeg-dev, libjpeg62-turbo-dev, libopenjp2-7-dev, libwebp-dev, libtiff5-dev, liblcms2-dev
+- **Database**: libpq-dev, postgresql-client, unixodbc, freetds-dev
+- **XML/HTML**: libxml2-dev, libxslt1-dev, libfontconfig, libfontconfig1-dev
+- **Fonts**: fonts-noto-cjk (CJK language support), fonts-crosextra-carlito
 - **PDF**: poppler-utils, wkhtmltopdf
 - **LDAP**: libldap2-dev, libsasl2-dev
+- **Kerberos/Auth**: libkrb5-dev
+- **Networking/async**: libevent-dev, libssl-dev
+- **Rendering**: libx11-dev, libxrender-dev, libxtst-dev, libxcb1-dev, libfreetype6-dev, libfribidi-dev, libharfbuzz-dev
+- **Misc**: libffi-dev, libbz2-dev, libc6-dev, libcups2-dev, libmagic1, zlib1g, zlib1g-dev
 
 ### Python Packages
 

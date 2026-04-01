@@ -20,6 +20,7 @@ jobs:
         with:
           filters: |
             odoo14: 'docker/14.0/**'
+            odoo17: 'docker/16.0/**'
             odoo17: 'docker/17.0/**'
             odoo18: 'docker/18.0/**'
       - name: Prepare matrix
@@ -29,7 +30,7 @@ jobs:
           echo "Filter results: $FILTER_JSON"
 
           CHANGED=()
-          for v in 14 17 18; do
+          for v in 14 16 17 18; do
             key="odoo${v}"
             val=$(echo "$FILTER_JSON" | jq -r ".${key}")
             if [[ "$val" == "true" ]]; then

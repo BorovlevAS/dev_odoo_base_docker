@@ -135,7 +135,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 WORKDIR /workspace
 
 # https://github.com/gevent/gevent/issues/2076 - install specific gevent version to avoid build errors
-RUN "$VIRTUAL_ENV/bin/python" -m pip install --upgrade pip setuptools wheel debugpy pre-commit \
+RUN "$VIRTUAL_ENV/bin/python" -m pip install --upgrade pip wheel debugpy pre-commit \
     && "$VIRTUAL_ENV/bin/python" -m pip install -r https://raw.githubusercontent.com/odoo/odoo/refs/heads/16.0/requirements.txt
 
 # Expose Odoo services

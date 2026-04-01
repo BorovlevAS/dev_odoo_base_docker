@@ -20,7 +20,7 @@ jobs:
         with:
           filters: |
             odoo14: 'docker/14.0/**'
-            odoo17: 'docker/16.0/**'
+            odoo16: 'docker/16.0/**'
             odoo17: 'docker/17.0/**'
             odoo18: 'docker/18.0/**'
       - name: Prepare matrix

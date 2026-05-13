@@ -31,7 +31,7 @@ jobs:
           echo "Filter results: $FILTER_JSON"
 
           CHANGED=()
-          for v in 14 16 17 18; do
+          for v in 14 16 17 18 19; do
             key="odoo${v}"
             val=$(echo "$FILTER_JSON" | jq -r ".${key}")
             if [[ "$val" == "true" ]]; then

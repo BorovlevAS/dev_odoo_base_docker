@@ -15,7 +15,7 @@ These images are designed to be **extended** in downstream projects where you ad
 
 ## 🎯 Purpose
 
-- **Multi-Version Support**: Separate base images for different Odoo versions (currently 14.0, 16.0, 17.0, and 18.0)
+- **Multi-Version Support**: Separate base images for different Odoo versions (currently 14.0, 16.0, 17.0, 18.0, and 19.0)
 - **Base Images Only**: Provides foundation layers with all system dependencies and tools
 - **Designed for Extension**: Meant to be extended with `FROM` directive in downstream Dockerfiles
 - **DevContainer Ready**: Optimized for use as a base in VS Code DevContainer projects
@@ -39,8 +39,12 @@ docker/
 │   ├── Dockerfile         # Odoo 17 base image
 │   └── conf/
 │       └── odoo-server.conf
-└── 18.0/
-    ├── Dockerfile         # Odoo 18 base image
+├── 18.0/
+│   ├── Dockerfile         # Odoo 18 base image
+│   └── conf/
+│       └── odoo-server.conf
+└── 19.0/
+    ├── Dockerfile         # Odoo 19 base image
     └── conf/
         └── odoo-server.conf
 ```
@@ -59,6 +63,7 @@ New Odoo versions can be added by creating a new directory following the same st
 - **Odoo 16.0**: Debian bookworm, PostgreSQL client 15
 - **Odoo 17.0**: Python 3.10 (Ubuntu Jammy), PostgreSQL client 14
 - **Odoo 18.0**: Python 3.12 (Ubuntu Noble), PostgreSQL client 14
+- **Odoo 19.0**: Ubuntu Noble, PostgreSQL client 17, Node.js 22.x
 - **Expandable**: Easy to add new versions following the existing structure
 
 ### System Components
@@ -66,8 +71,8 @@ New Odoo versions can be added by creating a new directory following the same st
 Each image includes:
 - **Base OS**: Ubuntu LTS, Debian bookworm, or Python base image (version specific to Odoo requirements)
 - **Python**: Version appropriate for the Odoo release (3.8 for v14, system for v16, 3.10+ for v17, 3.12+ for v18)
-- **Node.js**: v18.x via nodesource
-- **PostgreSQL Client**: Version parameterized via build args (PG 12 for v14, PG 15 for v16, PG 14 for v17/v18)
+- **Node.js**: v18.x via nodesource (v14–v18), v22.x (v19)
+- **PostgreSQL Client**: Version parameterized via build args (PG 12 for v14, PG 15 for v16, PG 14 for v17/v18, PG 17 for v19)
 - **wkhtmltopdf**: For PDF generation
 
 ### Development Tools
@@ -137,6 +142,9 @@ docker pull borovlevas/odoo-base:17.0
 
 # Pull Odoo 18 base image
 docker pull borovlevas/odoo-base:18.0
+
+# Pull Odoo 19 base image
+docker pull borovlevas/odoo-base:19.0
 ```
 
 ### Available Tags
@@ -154,6 +162,9 @@ Each version has multiple tags:
 - `18.0` - Latest Odoo 18 build
 - `18.0-YYYYMMDD` - Date-tagged builds
 - `18.0-{SHA}` - Git commit-tagged builds
+- `19.0` - Latest Odoo 19 build
+- `19.0-YYYYMMDD` - Date-tagged builds
+- `19.0-{SHA}` - Git commit-tagged builds
 
 ## 🔧 Usage
 
@@ -173,6 +184,9 @@ FROM borovlevas/odoo-base:17.0
 
 # For Odoo 18 projects
 FROM borovlevas/odoo-base:18.0
+
+# For Odoo 19 projects
+FROM borovlevas/odoo-base:19.0
 ```
 
 ### Extending the Base Image
@@ -285,6 +299,7 @@ docker build -t odoo-base:14.0 -f ./docker/14.0/Dockerfile ./docker/14.0
 docker build -t odoo-base:16.0 -f ./docker/16.0/Dockerfile ./docker/16.0
 docker build -t odoo-base:17.0 -f ./docker/17.0/Dockerfile ./docker/17.0
 docker build -t odoo-base:18.0 -f ./docker/18.0/Dockerfile ./docker/18.0
+docker build -t odoo-base:19.0 -f ./docker/19.0/Dockerfile ./docker/19.0
 ```
 
 ### Build Arguments
@@ -298,6 +313,7 @@ Each Dockerfile supports build arguments for customization:
   - Odoo 16: defaults to 15
   - Odoo 17: defaults to 14
   - Odoo 18: defaults to 14
+  - Odoo 19: defaults to 17
 
 Example with custom PostgreSQL version:
 
@@ -374,6 +390,7 @@ To add support for a new Odoo version:
      odoo16: 'docker/16.0/**'
      odoo17: 'docker/17.0/**'
      odoo18: 'docker/18.0/**'
+     odoo19: 'docker/19.0/**'
      odoo{XX}: 'docker/{XX}.0/**'  # Add new version
    ```
 4. Update the version detection loop in the workflow to include the new version number
@@ -498,6 +515,7 @@ The image includes `debugpy` for Python debugging. When working in a DevContaine
   - PostgreSQL 12+ for Odoo 14
   - PostgreSQL 14+ for Odoo 17
   - PostgreSQL 14+ for Odoo 18
+  - PostgreSQL 17+ for Odoo 19
 
 ## 🐛 Troubleshooting
 

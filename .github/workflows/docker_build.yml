@@ -23,6 +23,7 @@ jobs:
             odoo16: 'docker/16.0/**'
             odoo17: 'docker/17.0/**'
             odoo18: 'docker/18.0/**'
+            odoo19: 'docker/19.0/**'
       - name: Prepare matrix
         id: prepare
         run: |

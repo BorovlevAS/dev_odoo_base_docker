@@ -36,7 +36,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     libldap2-dev libsasl2-dev libssl-dev \
     libfontconfig libfribidi-dev libharfbuzz-dev \
     libopenjp2-7-dev libpq-dev libtiff5-dev libwebp-dev \
-    libxml2-dev libxcb1-dev libxslt1-dev \
+    libxml2-dev libxcb1-dev libxslt1-dev libcairo2-dev \
     nodejs \
     poppler-utils \
     postgresql-client-${PG_MAJOR} \
